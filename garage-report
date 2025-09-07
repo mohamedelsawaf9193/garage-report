@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>تقرير كراج الميكانيكي</title>
+  <style>
+    body {
+      font-family: 'Cairo', Arial, sans-serif;
+      color: #222;
+      padding: 20px;
+      background: url('https://xhhp1.github.io/mechanics/bg.png') center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+    }
+    h1 { color: #1a73e8; }
+    .section-block { background: #fafafa; margin-bottom: 20px; padding: 15px; border-radius: 6px; border:1px solid #eee;}
+    label { font-weight: bold; margin-top:10px; display:block;}
+    input, textarea, select { padding: 7px; margin: 5px 0 10px 0; border-radius: 4px; border: 1px solid #ccc; }
+    button { padding: 7px 18px; background: #1a73e8; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;}
+    button:hover { background: #1857c1; }
+    .export { margin-top: 20px; }
+    .units-list { margin-bottom:10px; }
+    .unit-input, .unit-prefix { display:inline-block; }
+    .unit-input { width:120px; }
+    .unit-prefix { width:65px; }
+    .remove-btn { background:#e63946; margin-right:5px; }
+    .remove-btn:hover { background:#b71c1c;}
+    .add-unit-btn { background: #43aa8b; margin-right: 5px;}
+    .add-unit-btn:hover { background: #218c5b;}
+    .group-title { font-weight: bold; color: #17539e; margin-top: 20px; }
+    .unit-row { margin-bottom:4px; }
+    .disabled-input { background: #e7e7e7; color: #999; }
+    .fleet-count { font-size:1.2em; font-weight:bold; color:#187347; margin-bottom:7px; }
+    .time-input { width:110px; margin-left:7px; margin-right:7px; }
+    .time-row { display:flex; align-items:center; margin-bottom:10px;}
+    .ampm-select { width:55px; margin-right:5px; }
+    .report-input { width:70px; margin-left:7px; margin-right:7px; }
+    #reportPreview { background:#f3f3f3; padding:10px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <h1>تقرير كراج الميكانيكي</h1>
+  <form id="reportForm" onsubmit="return false;">
+    <div class="section-block">
+      <label>رقم التقرير:</label>
+      <input type="text" id="reportNumber" class="report-input" placeholder="مثال: 5" oninput="updatePreview()">
+    </div>
+    <div class="section-block">
+      <div class="time-row">
+        <label>من الساعة:</label>
+        <input type="text" id="fromTime" class="time-input" placeholder="01:00" maxlength="5" oninput="updatePreview()">
+        <select id="fromTimeAmPm" class="ampm-select" onchange="updatePreview()">
+          <option value="م">م</option>
+          <option value="ص">ص</option>
+        </select>
+      </div>
+      <div class="time-row">
+        <label>حتى الساعة:</label>
+        <input type="text" id="toTime" class="time-input" placeholder="02:00" maxlength="5" oninput="updatePreview()">
+        <select id="toTimeAmPm" class="ampm-select" onchange="updatePreview()">
+          <option value="م">م</option>
+          <option value="ص">ص</option>
+        </select>
+      </div>
+    </div>
+    <div class="section-block">
+      <div class="group-title">قيادة الكراج:</div>
+      <div id="garageLead" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('garageLead')">إضافة قائد</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">مستشار القائد:</div>
+      <div id="adviser" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('adviser')">إضافة مستشار</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">المشرف العام:</div>
+      <div id="generalSupervisor" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('generalSupervisor')">إضافة مشرف عام</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">المشرف الميداني:</div>
+      <div id="fieldSupervisor" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('fieldSupervisor')">إضافة مشرف ميداني</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">مشرفين المناطق:</div>
+      <div id="areaSupervisors" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('areaSupervisors')">إضافة مشرف منطقة</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">مشرفين متدربين:</div>
+      <div id="traineeSupervisors" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('traineeSupervisors')">إضافة مشرف متدرب</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">العمليات:</div>
+      <div id="operations" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('operations')">إضافة وحدة عمليات</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">نائب العمليات:</div>
+      <div id="operationsDeputy" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('operationsDeputy')">إضافة نائب عمليات</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">مركز الاتصالات:</div>
+      <div id="communicationCenter" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('communicationCenter')">إضافة مركز اتصالات</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">السيدات و المعتمدين:</div>
+      <div id="ladiesAndAuthorized" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('ladiesAndAuthorized')">إضافة سيدة أو معتمد</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">جزيرة بوليتو:</div>
+      <div id="bolitoIsland" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('bolitoIsland')">إضافة وحدة</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">بوليتو:</div>
+      <div id="bolito" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('bolito')">إضافة وحدة</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">ساندي:</div>
+      <div id="sandy" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('sandy')">إضافة وحدة</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">لوس:</div>
+      <div id="los" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('los')">إضافة وحدة</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">خدمات الاسطول:</div>
+      <div class="fleet-count">
+        عدد:
+        <select id="fleetCount">
+          <option value="00">00</option>
+          <option value="01">01</option>
+          <option value="02">02</option>
+          <option value="03">03</option>
+          <option value="04">04</option>
+          <option value="05">05</option>
+          <option value="06">06</option>
+          <option value="07">07</option>
+          <option value="08">08</option>
+          <option value="09">09</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+    </div>
+    <div class="section-block">
+      <div class="group-title">ميناء لوس:</div>
+      <div id="losPort" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('losPort')">إضافة ميناء لوس</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">ميناء بوليتو:</div>
+      <div id="bolitoPort" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('bolitoPort')">إضافة ميناء بوليتو</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">تنظيم سير تعديل و تزويد:</div>
+      <div id="trafficOrg" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('trafficOrg')">إضافة تنظيم سير</button>
+    </div>
+    <div class="section-block">
+      <div class="group-title">البحث والإنقاذ:</div>
+      <div id="rescue" class="units-list"></div>
+      <button type="button" class="add-unit-btn" onclick="addUnit('rescue')">إضافة بحث وإنقاذ</button>
+    </div>
+    <button type="button" onclick="exportReport()">تصدير التقرير كملف TXT</button>
+  </form>
+  <div class="export">
+    <h2>نموذج التقرير:</h2>
+    <pre id="reportPreview"></pre>
+  </div>
+  <script>
+    function addUnit(areaId) {
+      const parent = document.getElementById(areaId);
+      const unitDiv = document.createElement('div');
+      unitDiv.className = "unit-row";
+      const prefixSelect = document.createElement('select');
+      prefixSelect.className = 'unit-prefix';
+      [
+        {v: 'G-', t: 'G-'},
+        {v: 'E-', t: 'E-'},
+        {v: 'P-', t: 'P-'},
+        {v: 'H-', t: 'H-'},
+        {v: 'NONE', t: 'لا يوجد'}
+      ].forEach(optObj=>{
+        const opt = document.createElement('option');
+        opt.value = optObj.v;
+        opt.textContent = optObj.t;
+        prefixSelect.appendChild(opt);
+      });
+      prefixSelect.onchange = function() {
+        if(this.value === 'NONE') {
+          unitInput.value = '';
+          unitInput.disabled = true;
+          unitInput.classList.add('disabled-input');
+        } else {
+          unitInput.disabled = false;
+          unitInput.classList.remove('disabled-input');
+        }
+        updatePreview();
+      };
+      const unitInput = document.createElement('input');
+      unitInput.type = 'text';
+      unitInput.placeholder = 'رقم / اسم';
+      unitInput.className = 'unit-input';
+      unitInput.oninput = updatePreview;
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'remove-btn';
+      removeBtn.textContent = '×';
+      removeBtn.onclick = () => { parent.removeChild(unitDiv); updatePreview(); };
+      unitDiv.appendChild(prefixSelect);
+      unitDiv.appendChild(unitInput);
+      unitDiv.appendChild(removeBtn);
+      parent.appendChild(unitDiv);
+      updatePreview();
+    }
+    function getUnits(areaId) {
+      const parent = document.getElementById(areaId);
+      const units = [];
+      parent.querySelectorAll('.unit-row').forEach(unitRow => {
+        const prefix = unitRow.querySelector('.unit-prefix').value;
+        const number = unitRow.querySelector('.unit-input').value.trim();
+        if(prefix === 'NONE') {
+          units.push('لا يوجد');
+        } else if(number) {
+          units.push(prefix + number);
+        }
+      });
+      return units;
+    }
+    function generateLine(label, arr, emptyLabel) {
+      let filteredArr = arr.filter(v=>v && v !== 'لا يوجد');
+      if (filteredArr.length === 0 && arr.includes('لا يوجد')) {
+        return `${label} لا يوجد\n\n`;
+      }
+      let out = `${label} `;
+      if (filteredArr.length) {
+        out += filteredArr.join(' - ');
+      } else {
+        out += emptyLabel || "لايوجد";
+      }
+      out += '\n\n';
+      return out;
+    }
+    function generateReport() {
+      const reportNumber = document.getElementById('reportNumber').value.trim();
+      const fromTime = document.getElementById('fromTime').value.trim();
+      const fromTimeAmPm = document.getElementById('fromTimeAmPm').value;
+      const toTime = document.getElementById('toTime').value.trim();
+      const toTimeAmPm = document.getElementById('toTimeAmPm').value;
+      const fleetCount = document.getElementById('fleetCount').value;
+      let report = `تم استلام التقرير الميداني لـكراج الميكانيكي\n\n`;
+      report += `تقرير رقم ( ${reportNumber} )\n\n`;
+      report += `من الساعه ${fromTime} (${fromTimeAmPm})\nحتى الساعه ${toTime} (${toTimeAmPm})\n\n`;
+      report += generateLine("قيادة الكراج :", getUnits('garageLead'));
+      report += generateLine("مستشار القائد :", getUnits('adviser'));
+      report += generateLine("المشرف العام :", getUnits('generalSupervisor'));
+      report += generateLine("المشرف الميداني :", getUnits('fieldSupervisor'));
+      report += generateLine("مشرفين المناطق:", getUnits('areaSupervisors'));
+      report += generateLine("مشرفين متدربين:", getUnits('traineeSupervisors'));
+      report += generateLine("العمليات :", getUnits('operations'));
+      report += generateLine("نائب العمليات :", getUnits('operationsDeputy'));
+      report += generateLine("مركز الاتصالات:", getUnits('communicationCenter'));
+      report += generateLine("السيدات و المعتمدين :", getUnits('ladiesAndAuthorized'));
+      report += `جزيرة بوليتو :\n`;
+      let arr = getUnits('bolitoIsland');
+      if (arr.length) arr.forEach(u => report += `- ${u}\n`);
+      report += `\nبوليتو :\n`;
+      arr = getUnits('bolito');
+      if (arr.length) arr.forEach(u => report += `- ${u}\n`);
+      report += `\nساندي :\n`;
+      arr = getUnits('sandy');
+      if (arr.length) arr.forEach(u => report += `- ${u}\n`);
+      report += `\nلوس :\n`;
+      arr = getUnits('los');
+      if (arr.length) arr.forEach(u => report += `- ${u}\n`);
+      report += `\nخدمات الاسطول :\nعدد / ${fleetCount}\n`;
+      report += `\nميناء لوس :\n`;
+      arr = getUnits('losPort');
+      if (arr.length) arr.forEach(u => report += `- ${u}\n`);
+      report += `\nميناء بوليتو :\n`;
+      arr = getUnits('bolitoPort');
+      if (arr.length) arr.forEach(u => report += `- ${u}\n`);
+      report += `\nتنظيم سير تعديل و تزويد :\n`;
+      arr = getUnits('trafficOrg');
+      if (arr.length) arr.forEach(u => report += `- ${u}\n`);
+      report += `\nالبحث والإنقاذ :\n`;
+      arr = getUnits('rescue');
+      if (arr.length) arr.forEach(u => report += `- ${u}\n`);
+      return report;
+    }
+    function updatePreview() {
+      document.getElementById('reportPreview').textContent = generateReport();
+    }
+    // إضافة عنصر افتراضي بكل خانة
+    const sections = [
+      'garageLead','adviser','generalSupervisor','fieldSupervisor',
+      'areaSupervisors','traineeSupervisors','operations','operationsDeputy','communicationCenter','ladiesAndAuthorized',
+      'bolitoIsland','bolito','sandy','los','losPort','bolitoPort','trafficOrg','rescue'
+    ];
+    sections.forEach(id => addUnit(id));
+    // معاينة أولية
+    updatePreview();
+    function exportReport() {
+      const report = generateReport();
+      document.getElementById('reportPreview').textContent = report;
+      const blob = new Blob([report], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'garage-report.txt';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    document.getElementById('fleetCount').addEventListener('change', updatePreview);
+    document.getElementById('fromTimeAmPm').addEventListener('change', updatePreview);
+    document.getElementById('toTimeAmPm').addEventListener('change', updatePreview);
+    document.getElementById('reportNumber').addEventListener('input', updatePreview);
+    document.getElementById('fromTime').addEventListener('input', updatePreview);
+    document.getElementById('toTime').addEventListener('input', updatePreview);
+  </script>
+</body>
+</html>
